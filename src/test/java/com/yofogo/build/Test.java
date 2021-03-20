@@ -1,10 +1,8 @@
 package com.yofogo.build;
 
-import com.alibaba.fastjson.JSONObject;
 import com.yofogo.build.das.FormDataForDBImpl;
 import com.yofogo.build.das.IFormData;
 import com.yofogo.build.entity.dto.FormInfo;
-import com.yofogo.build.entity.dto.query.AbsFormQueryDto;
 import com.yofogo.build.entity.dto.query.FormDBQueryDto;
 import com.yofogo.build.entity.enums.BuildConmand;
 import com.yofogo.build.entity.po.ProInfo;
@@ -31,14 +29,17 @@ public class Test {
         //String conmands="entity,service,controller";//,project,pageView";
         //String conmands="project";
 
-        String module="system",//模块名，模块包子包名   item、user、activity、thirdparty
+        String module="goods",//模块名，模块包子包名   item、user、activity、thirdparty
                 dbSource="ssweixin",//对应dbconfig中的name  ssweixin、yofoys_activities
                 dbName="ssweixin";//数据库名    ssweixin、yofoys_activities
         Map<String,String> tableForDesc=new HashMap<String,String>();
 
-        tableForDesc.put("config_ss_operate","折扣配置外层信息表");
-        tableForDesc.put("config_ss_operate_item","具体折扣信息列表");
-        tableForDesc.put("config_ss_operate_threshold","折扣门槛信息表");
+        tableForDesc.put("gd_plate_goods","板块商品信息");
+        tableForDesc.put("gd_plate_info","板块信息");
+        tableForDesc.put("gd_plate_module","板块模块信息");
+        tableForDesc.put("gd_plate_cats","板块分类信息");
+        tableForDesc.put("gd_plate_brand","板块品牌信息");
+        tableForDesc.put("item_brand","商品品牌信息");
 
 
 
@@ -46,7 +47,10 @@ public class Test {
         project.setOutPath("C:\\Users\\Administrator\\Desktop");
         project.setDatabaseName(dbSource);
         project.setOutName("test-build-user");
-        project.setBasePackage("com.yofoys.services."+module);
+        project.setBasePackage("com.yofoys.services");
+        project.setChildPackage("."+module);
+        project.setModuleServiceName("YOFOYS-ITEM-SERVICES");
+        project.setDelTablePrefix("gd_");
         for(String tableName : tableForDesc.keySet()){
             //ssweixin yofoys_activities
 
@@ -59,7 +63,7 @@ public class Test {
 
             FormInfo form=formData.getFormInfo(formQueryDto);//.findFormInfo("ssweixin","ssweixin",tableName,tableForDesc);
             form.setModuleName(module);
-            com.yzz.cms.build.BuildHandler.buildConmand(conmands, project, form);
+            BuildHandler.buildConmand(conmands, project, form);
         }
 
     }

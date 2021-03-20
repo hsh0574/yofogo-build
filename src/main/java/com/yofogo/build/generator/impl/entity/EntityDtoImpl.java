@@ -13,17 +13,23 @@ import com.yofogo.build.generator.BuildUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import java.io.*;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 import java.util.Random;
 
 public class EntityDtoImpl implements IEntityDto {
 
     private static boolean isAnnotationDesc=false;
+    private static boolean IS_NEW_MODULE=true;
+
+    private final static List<String> COMMON_FIELDS= Arrays.asList("tenantId,instanceId,createPerson,createTime,updatePerson,updateTime,isFlat".split(","));
 
     public boolean buildEntityPo(ProInfo project, FormInfo formInfo) {
-        String className= BuildUtils.buildTuoFengName(formInfo.getTag(),true);
+        String className= BuildUtils.buildTuoFengName(formInfo.getTag(),true,project.getDelTablePrefix());
         try {
             StringBuilder outStr=new StringBuilder();
-            outStr.append("package "+project.getBasePackage()+project.getChildPackage()+".entity.po;\n");
+            outStr.append("package "+project.getBasePackage()+project.getChildPackage()+BuildUtils.DAO_PACKAGE_NAME +".po;\n");
             outStr.append("\n");
             outStr.append("import org.springframework.format.annotation.DateTimeFormat;\n");
             outStr.append("\n");
@@ -121,9 +127,9 @@ public class EntityDtoImpl implements IEntityDto {
             outStr.append(methods.toString());
             outStr.append(methodOther.toString());
             outStr.append("}");
-            File file=new File(project.getJavaBasePath()+project.getChildPackage().replace(".", "/")+"/entity/po");
+            File file=new File(project.getJavaBasePath()+(project.getChildPackage()+BuildUtils.DAO_PACKAGE_NAME).replace(".", "/")+"/po");
             if(!file.exists()) file.mkdirs();
-            BufferedWriter outWrite= new BufferedWriter(new OutputStreamWriter(new FileOutputStream(project.getJavaBasePath()+project.getChildPackage().replace(".", "/")+"/entity/po/"+className+"Po.java"),BuildUtils.FILE_CHARSETNAME));
+            BufferedWriter outWrite= new BufferedWriter(new OutputStreamWriter(new FileOutputStream(project.getJavaBasePath()+(project.getChildPackage()+BuildUtils.DAO_PACKAGE_NAME).replace(".", "/")+"/po/"+className+"Po.java"),BuildUtils.FILE_CHARSETNAME));
             outWrite.write(outStr.toString());
             outWrite.flush();
             outWrite.close();
@@ -135,23 +141,25 @@ public class EntityDtoImpl implements IEntityDto {
     }
 
     public boolean buildEntityDto(ProInfo project,FormInfo formInfo){
-        String className=BuildUtils.buildTuoFengName(formInfo.getTag(),true);
-        File file=new File(project.getJavaBasePath()+project.getChildPackage().replace(".", "/")+"/entity/dto");
+        String className=BuildUtils.buildTuoFengName(formInfo.getTag(),true,project.getDelTablePrefix());
+        File file=new File(project.getJavaBasePath()+project.getChildPackage().replace(".", "/")+"/api/dto");
         try {
             if(!file.exists()) file.mkdirs();
-            _buildEntityDto(project,formInfo,className, DtoType.DTO_REQUEST);
-            _buildEntityDto(project,formInfo,className,DtoType.DTO_REQUEST_QUERY);
-            _buildEntityDto(project,formInfo,className,DtoType.DTO_RESPONSE);
+            for (DtoType dtoType : DtoType.values()){
+                _buildEntityDto(project,formInfo,className, dtoType);
+            }
             return true;
         } catch (IOException e) {
             e.printStackTrace();
         }
         return false;
     }
-    private void _buildEntityDto(ProInfo project,FormInfo formInfo,String className,DtoType dtoTypeName) throws IOException{
+    private void _buildEntityDto(ProInfo project,FormInfo formInfo,String className,DtoType dtoType) throws IOException{
+
+        String extendsStr = IS_NEW_MODULE?" extends BaseQueryDto":"";
 
         StringBuilder outStr=new StringBuilder();
-        outStr.append("package "+project.getBasePackage()+project.getChildPackage()+".entity"+dtoTypeName.getPackagName()+";\n");
+        outStr.append("package "+project.getBasePackage()+project.getChildPackage()+".api"+dtoType.getPackagName()+";\n");
         outStr.append("\n");
         outStr.append("import cn.com.yofogo.tools.util.DateTimeUtil;\n");
         //outStr.append("import com.yzzou.commons.utils.ReqeustQueryDto;\n");
@@ -160,10 +168,17 @@ public class EntityDtoImpl implements IEntityDto {
         //if(isLombok) outStr.append("import lombok.experimental.Accessors;");
         outStr.append("import io.swagger.annotations.ApiModelProperty;");
         String extendClass="";
-        //if(DtoType.DTO_REQUEST_QUERY==dtoTypeName) queyryDto=" extends ReqeustQueryDto";
+        if(dtoType.name().startsWith(DtoType.DTO_REQUEST_QUERY.name())){
+            extendClass = IS_NEW_MODULE?" extends BaseQueryDto":"";
+            outStr.append("import com.yofoys.services.commons.base.BaseQueryDto;");
+        } else if(DtoType.DTO_REQUEST==dtoType) {
+            extendClass = IS_NEW_MODULE?" extends BaseReqDto":"";
+            outStr.append("import com.yofoys.services.commons.base.BaseReqDto;");
+        }
+        //else if(DtoType.DTO_RESPONSE==dtoTypeName) extendClass = IS_NEW_MODULE?" extends BaseQueryDto":"";
         outStr.append("\n");
-        outStr.append("/**\n * "+formInfo.getNames()+"DTO实体类\n * @author zhengzhou.yang\n * "+DateTimeUtil.getCurrentDatetime("yyyy-MM-dd")+"\n */\n");
-        outStr.append("public class "+className+dtoTypeName.getPrex()+extendClass+" implements java.io.Serializable{\n");
+        outStr.append("/**\n * "+formInfo.getNames()+dtoType.getPrex()+"实体类\n * @author zhengzhou.yang\n * "+DateTimeUtil.getCurrentDatetime("yyyy-MM-dd")+"\n */\n");
+        outStr.append("public class "+className+dtoType.getPrex()+extendClass+"  implements java.io.Serializable{\n");
         outStr.append("	private static final long serialVersionUID = "+new Random().nextLong()+"L;\n");
         outStr.append("\n");
         outStr.append("\n");
@@ -187,6 +202,11 @@ public class EntityDtoImpl implements IEntityDto {
                 //if(field.getFdfMust()==1) annotation+=",notNull=true";
                 fieldName=BuildUtils.buildTuoFengName(field.getTag(),false);
                 fieldFType=FormFieldType.valueOf(field.getTypes());
+            }
+            if(COMMON_FIELDS.contains(fieldName)){
+                if(dtoType.name().indexOf("RESPONSE")<0 || !"createTime".equals(fieldName)){
+                    continue;
+                }
             }
             annotation+=("".equals(annotation)?"":"\n")+"@ApiModelProperty(name = \""+fieldName+"\",value = \""+field.getNames()+"\")";
 
@@ -228,9 +248,9 @@ public class EntityDtoImpl implements IEntityDto {
         outStr.append(methods.toString());
         outStr.append("\n");
         outStr.append("}");
-        File file=new File(project.getJavaBasePath()+project.getChildPackage().replace(".", "/")+"/entity"+dtoTypeName.getPackagName().replace(".","/"));
+        File file=new File(project.getJavaBasePath()+project.getChildPackage().replace(".", "/")+"/api/"+dtoType.getPackagName().replace(".","/"));
         if(!file.exists()) file.mkdirs();
-        BufferedWriter outWrite= new BufferedWriter(new OutputStreamWriter(new FileOutputStream(project.getJavaBasePath()+project.getChildPackage().replace(".", "/")+"/entity"+dtoTypeName.getPackagName().replace(".","/")+"/"+className+dtoTypeName.getPrex()+".java"),BuildUtils.FILE_CHARSETNAME));
+        BufferedWriter outWrite= new BufferedWriter(new OutputStreamWriter(new FileOutputStream(project.getJavaBasePath()+project.getChildPackage().replace(".", "/")+"/api"+dtoType.getPackagName().replace(".","/")+"/"+className+dtoType.getPrex()+".java"),BuildUtils.FILE_CHARSETNAME));
         outWrite.write(outStr.toString());
         outWrite.flush();
         outWrite.close();

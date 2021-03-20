@@ -40,6 +40,8 @@ public class ProInfo implements java.io.Serializable{
 	private String childPackage="";//项目子包路径
 	private String databaseName="";//数据源名称
 	private boolean isLombok=false;//是否使用Lombok
+	private String delTablePrefix="";//删除表名前缀
+	private String moduleServiceName="";//模块服务名称
 
 
 	/**
@@ -276,5 +278,29 @@ public class ProInfo implements java.io.Serializable{
 
 	public void setLombok(boolean lombok) {
 		isLombok = lombok;
+	}
+
+	/**
+	 * 删除的前缀
+	 * @return
+	 */
+	public String getDelTablePrefix() {
+		return delTablePrefix;
+	}
+
+	/**
+	 * 删除的前缀
+	 * @param delTablePrefix
+	 */
+	public void setDelTablePrefix(String delTablePrefix) {
+		this.delTablePrefix = delTablePrefix;
+	}
+
+	public String getModuleServiceName() {
+		return moduleServiceName;
+	}
+
+	public void setModuleServiceName(String moduleServiceName) {
+		this.moduleServiceName = moduleServiceName;
 	}
 }

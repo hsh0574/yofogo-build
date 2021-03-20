@@ -11,6 +11,7 @@ public enum DBFieldType {
     DATE("DATE","DATE"),
     DOUBLE("DOUBLE","DOUBLE"),
     CHAR("CHAR","CHAR"),
+    BIT("BIT","BIT"),
     TEXT("TEXT","TEXT"),
     SMALLINT("SMALLINT","SMALLINT"),
     TINYINT("TINYINT","TINYINT"),

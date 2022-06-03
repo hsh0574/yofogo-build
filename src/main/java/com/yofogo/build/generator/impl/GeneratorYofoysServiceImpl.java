@@ -60,13 +60,23 @@ public class GeneratorYofoysServiceImpl implements IGenerator {
                 outInter.append("import "+project.getBasePackage()+project.getChildPackage()+".api"+DtoType.DTO_REQUEST_QUERY.getPackagName()+"."+entityClassName+DtoType.DTO_REQUEST_QUERY.getPrex()+";\n");
                 outInter.append("import "+project.getBasePackage()+project.getChildPackage()+".api"+DtoType.DTO_REQUEST_QUERY_LIST.getPackagName()+"."+entityClassName+DtoType.DTO_REQUEST_QUERY_LIST.getPrex()+";\n");
                 outInter.append("import "+project.getBasePackage()+project.getChildPackage()+".api"+DtoType.DTO_REQUEST_QUERY_PAGE.getPackagName()+"."+entityClassName+DtoType.DTO_REQUEST_QUERY_PAGE.getPrex()+";\n");
-                outInter.append("import cn.com.yofogo.frame.assistant.PageUtil;\n\n");
+                outInter.append("import "+project.getBasePackage()+project.getChildPackage()+BuildUtils.DAO_PACKAGE_NAME +".po."+entityClassNamePo+";\n");
+                outInter.append("import com.yofoys.services.commons.base.PageRespDto;\n\n");
                 outInter.append("public interface I"+className+" {\n\n");
             }
             {
                 outImpl.append("package "+project.getBasePackage()+project.getChildPackage()+"."+serviceModule.getPageName()+".impl;\n\n");
                 outImpl.append("import java.util.ArrayList;\n");
                 outImpl.append("import java.util.List;\n");
+
+                outImpl.append("import com.yofoys.services.commons.base.PageRespDto;\n");
+                outImpl.append("import org.springframework.beans.factory.annotation.Autowired;\n");
+                outImpl.append("import org.springframework.stereotype.Service;\n");
+                outImpl.append("import javax.annotation.Resource;\n");
+                outImpl.append("import cn.com.yofogo.frame.tools.NumberCreator;\n");
+                outImpl.append("import cn.com.yofogo.frame.assistant.PageUtil;\n");
+                outImpl.append("import cn.com.yofogo.frame.dao.perdure.BaseDao;\n");
+                outImpl.append("import cn.com.yofogo.tools.Feedback;\n");
 
                 outImpl.append("import "+project.getBasePackage()+project.getChildPackage()+".api"+DtoType.DTO_RESPONSE.getPackagName()+"."+entityClassName+DtoType.DTO_RESPONSE.getPrex()+";\n");
                 outImpl.append("import "+project.getBasePackage()+project.getChildPackage()+".api"+DtoType.DTO_RESPONSE_LIST.getPackagName()+"."+entityClassName+DtoType.DTO_RESPONSE_LIST.getPrex()+";\n");
@@ -78,19 +88,12 @@ public class GeneratorYofoysServiceImpl implements IGenerator {
                 outImpl.append("import "+project.getBasePackage()+project.getChildPackage()+BuildUtils.DAO_PACKAGE_NAME +".po."+entityClassNamePo+";\n");
                 //import com.yofoys.services.goods.dao.po.PlateBrandPo;
                 outImpl.append("import "+project.getBasePackage()+project.getChildPackage()+"."+serviceModule.getPageName()+".I"+className+";\n");
-                outImpl.append("import cn.com.yofogo.frame.assistant.PageUtil;\n");
                 //outImpl.append("import cn.com.yofogo.frame.dao.DBModes.ResultMode;\n");
-                outImpl.append("import cn.com.yofogo.frame.dao.perdure.BaseDao;\n");
-                outImpl.append("import cn.com.yofogo.tools.Feedback;\n");
-                outImpl.append("import org.springframework.beans.factory.annotation.Autowired;\n");
-                outImpl.append("import org.springframework.beans.BeanUtils;");
-                outImpl.append("import javax.annotation.Resource;");
                 //if(project.getControllerType()==1)
-                {
-                    outImpl.append("import org.springframework.stereotype.Service;\n");
-                    outImpl.append("@Service\n");//(\""+className+"\")
-                }
+
                 outImpl.append("\n");
+
+                outImpl.append("@Service\n");
                 outImpl.append("public class "+className+"Impl implements I"+className+" {\n\n");
             }
             outImpl.append("	@Resource(name = \""+project.getDatabaseName()+"\")\n");//
@@ -100,19 +103,17 @@ public class GeneratorYofoysServiceImpl implements IGenerator {
                 if("add".equalsIgnoreCase(methodName)){
                     methodHead="	/**\n"
                             +"	 * 新增"+formInfo.getNames()+"\n"
-                            +"	 * @param "+entityName+" \n"
+                            +"	 * @param "+entityName+"Po \n"
                             +"	 * @return 0:新增成功；其他值为新增失败\n"
                             +"	 */\n";
                     //接口
                     outInter.append(methodHead);
-                    outInter.append("	public Feedback add"+entityClassName+"("+entityClassNameReqDto+" "+entityName+");\n");
+                    outInter.append("	public Feedback add"+entityClassName+"("+entityClassNamePo+" "+entityName+"Po);\n");
 
                     //接口实现
                     outImpl.append(methodHead);
                     outImpl.append("	@Override\n");
-                    outImpl.append("	public Feedback add"+entityClassName+"("+entityClassNameReqDto+" "+entityName+") {\n");
-                    outImpl.append("		"+entityClassNamePo+" "+entityName+"Po = new "+entityClassNamePo+"();\n");
-                    outImpl.append("		BeanUtils.copyProperties("+entityName+", "+entityName+"Po);\n");
+                    outImpl.append("	public Feedback add"+entityClassName+"("+entityClassNamePo+" "+entityName+"Po) {\n");
 
                     if(formInfo.getPrimaryType()==2){
 
@@ -130,19 +131,17 @@ public class GeneratorYofoysServiceImpl implements IGenerator {
                 }else if("update".equalsIgnoreCase(methodName)){
                     methodHead="	/**\n"
                             +"	 * 修改"+formInfo.getNames()+"\n"
-                            +"	 * @param "+entityName+" \n"
+                            +"	 * @param "+entityName+"Po \n"
                             +"	 * @return 0:修改成功；其他值为修改失败\n"
                             +"	 */\n";
                     {
                         outInter.append(methodHead);
-                        outInter.append("	public Feedback update"+entityClassName+"("+entityClassNameReqDto+" "+entityName+");\n");
+                        outInter.append("	public Feedback update"+entityClassName+"("+entityClassNamePo+" "+entityName+"Po);\n");
                     }
                     {
                         outImpl.append(methodHead);
                         outImpl.append("	@Override\n");
-                        outImpl.append("	public Feedback update"+entityClassName+"("+entityClassNameReqDto+" "+entityName+") {\n");
-                        outImpl.append("		"+entityClassNamePo+" "+entityName+"Po = new "+entityClassNamePo+"();\n");
-                        outImpl.append("		BeanUtils.copyProperties("+entityName+", "+entityName+"Po);\n");
+                        outImpl.append("	public Feedback update"+entityClassName+"("+entityClassNamePo+" "+entityName+"Po) {\n");
                         outImpl.append("		boolean reslut=false;\n");
                         outImpl.append("		try {\n");
                         outImpl.append("			reslut = dbHelp.update("+entityName+"Po);\n");
@@ -244,11 +243,23 @@ public class GeneratorYofoysServiceImpl implements IGenerator {
                 outImpl.append("		sql.append(\""+sh.getSql()+"\");\n");
                 if(formInfo.getTypes()==1) {
                     outImpl.append("		params.add("+formInfo.getFiid()+");\n");
-                } else {// if(formInfo.getFormDataWheres().size()>0)
+                } else {
+                    // if(formInfo.getFormDataWheres().size()>0)
                     //outImpl.append("		sql.append(\" WHERE 1=1\");\n");
                     outImpl.append("		sql.append(\" WHERE is_flat=?\");\n");
-                    outImpl.append("		params.add("+querHandleName+"."+getPrex+"IsFlat"+"());\n");
+                    outImpl.append("		params.add("+querHandleName+"."+getPrex+"IsFlat());\n");
                 }
+                {//SASS
+                    outImpl.append("		if(" + querHandleName + "." + getPrex + "TenantId()!=null) {\n");
+                    outImpl.append("			sql.append(\" AND tenant_id=?\");\n");
+                    outImpl.append("			params.add(" + querHandleName + "." + getPrex + "TenantId());\n");
+                    outImpl.append("		}\n");
+                    outImpl.append("		if(" + querHandleName + "." + getPrex + "InstanceId()!=null) {\n");
+                    outImpl.append("			sql.append(\" AND instance_id=?\");\n");
+                    outImpl.append("			params.add(" + querHandleName + "." + getPrex + "InstanceId());\n");
+                    outImpl.append("		}\n");
+                }
+
                 if(!isBetweenTime){
                     methodName="CreateTime";
                     String fieldName="create_time";
@@ -284,17 +295,16 @@ public class GeneratorYofoysServiceImpl implements IGenerator {
                 String pageUtil="PageUtil<"+entityClassName+DtoType.DTO_RESPONSE_PAGE.getPrex()+","+entityClassName+DtoType.DTO_REQUEST_QUERY_PAGE.getPrex()+">";
                 methodHead="	/**\n"
                         +"	 * 根据条件分页获取 "+formInfo.getNames()+"\n"
-                        +"	 * @param page \n"
                         +"	 * @param "+querHandleName+"\n"
                         +"	 * @return \n"
                         +"	 */\n";
                 outInter.append(methodHead);
-                outInter.append("	public void queryPage("+pageUtil+" page,"+entityClassName+DtoType.DTO_REQUEST_QUERY_PAGE.getPrex()+" "+querHandleName+");\n");
+                outInter.append("	public Feedback<PageRespDto<"+entityClassName+DtoType.DTO_RESPONSE_PAGE.getPrex()+">> queryPage("+entityClassName+DtoType.DTO_REQUEST_QUERY_PAGE.getPrex()+" "+querHandleName+");\n");
 
                 SqlHandler sh=formInfo.getSqlSelectAll();
                 outImpl.append(methodHead);
                 outImpl.append("	@Override\n");
-                outImpl.append("	public void queryPage("+pageUtil+" page,"+entityClassName+DtoType.DTO_REQUEST_QUERY_PAGE.getPrex()+" "+querHandleName+") {\n");
+                outImpl.append("	public Feedback<PageRespDto<"+entityClassName+DtoType.DTO_RESPONSE_PAGE.getPrex()+">> queryPage("+entityClassName+DtoType.DTO_REQUEST_QUERY_PAGE.getPrex()+" "+querHandleName+") {\n");
 
                 FormElementField field;
                 //选择数据从数据库获取时，列表查询需要进行子查询的处理
@@ -382,9 +392,16 @@ public class GeneratorYofoysServiceImpl implements IGenerator {
                     outImpl.append("		sql.append(\" WHERE is_flat=?\");\n");
                     outImpl.append("		params.add("+querHandleName+"."+getPrex+"IsFlat"+"());\n");
                 }
-
-
-
+                {//SASS
+                    outImpl.append("		if(" + querHandleName + "." + getPrex + "TenantId()!=null) {\n");
+                    outImpl.append("			sql.append(\" AND tenant_id=?\");\n");
+                    outImpl.append("			params.add(" + querHandleName + "." + getPrex + "TenantId());\n");
+                    outImpl.append("		}\n");
+                    outImpl.append("		if(" + querHandleName + "." + getPrex + "InstanceId()!=null) {\n");
+                    outImpl.append("			sql.append(\" AND instance_id=?\");\n");
+                    outImpl.append("			params.add(" + querHandleName + "." + getPrex + "InstanceId());\n");
+                    outImpl.append("		}\n");
+                }
                 if(!isBetweenTime){
                     methodName="CreateTime";
                     String fieldName="create_time";
@@ -401,7 +418,21 @@ public class GeneratorYofoysServiceImpl implements IGenerator {
                     sqlWheres.append("		} \n");
                 }
                 outImpl.append(sqlWheres);
+
+                outImpl.append("\n");
+                outImpl.append("		"+pageUtil+" page = new PageUtil<>();\n");
+                outImpl.append("		page.setPageNo("+querHandleName+".getPageQueryNo());\n");
+                outImpl.append("		page.setPageSize("+querHandleName+".getPageQuerySize());\n");
+                outImpl.append("\n");
                 outImpl.append("		dbHelp.queryForPage("+entityClassName+DtoType.DTO_RESPONSE_PAGE.getPrex()+".class, page, sql.toString(), params.toArray());\n");
+                outImpl.append("\n");
+                outImpl.append("		PageRespDto<"+entityClassName+DtoType.DTO_RESPONSE_PAGE.getPrex()+"> result= new PageRespDto<>();\n");
+                outImpl.append("		result.setPageNo(page.getPageNo());\n");
+                outImpl.append("		result.setPageSize(page.getPageSize());\n");
+                outImpl.append("		result.setRows(page.getList());\n");
+                outImpl.append("		result.setTotal(page.getRecTotal());\n");
+                outImpl.append("		page = null;\n");
+                outImpl.append("		return new Feedback<>(result);\n");
                 outImpl.append("	}\n");
 
             }
@@ -476,6 +507,7 @@ public class GeneratorYofoysServiceImpl implements IGenerator {
         String entityClassName=BuildUtils.buildTuoFengName(formInfo.getTag(),true,project.getDelTablePrefix()),
                 entityName=BuildUtils.buildTuoFengName(formInfo.getTag(),false,project.getDelTablePrefix()),
                 entityClassNameReqDto=entityClassName+DtoType.DTO_REQUEST.getPrex(),
+                entityClassNamePo = entityClassName+"Po",
                 entityClassNameRespDto=entityClassName+DtoType.DTO_RESPONSE.getPrex();
         String dasInterface="I"+entityClassName+ serviceModule.getSuffix(),
                 dasName=entityName+ serviceModule.getSuffix();
@@ -490,10 +522,11 @@ public class GeneratorYofoysServiceImpl implements IGenerator {
                 outStr.append("package "+project.getBasePackage()+project.getChildPackage()+"."+bizModule.getPageName()+";\n");
                 outStr.append("\n");
                 //outStr.append("import javax.annotation.Resource;\n");
-                //outStr.append("import javax.servlet.http.HttpServletResponse;\n");
+                outStr.append("import com.yofoys.services.commons.base.PageRespDto;\n");
                 outStr.append("import org.springframework.beans.factory.annotation.Autowired;\n");
                 outStr.append("import org.springframework.stereotype.Service;\n");
                 outStr.append("import org.springframework.web.bind.annotation.*;\n");
+                outStr.append("import org.springframework.beans.BeanUtils;\n");
                 outStr.append("\n");
                 outStr.append("import "+project.getBasePackage()+project.getChildPackage()+"."+apiModule.getPageName()+".I"+entityClassName+apiModule.getSuffix()+";\n");
                 //if(isDto){
@@ -504,6 +537,7 @@ public class GeneratorYofoysServiceImpl implements IGenerator {
                     outStr.append("import "+project.getBasePackage()+project.getChildPackage()+".api"+DtoType.DTO_REQUEST_QUERY.getPackagName()+"."+entityClassName+DtoType.DTO_REQUEST_QUERY.getPrex()+";\n");
                     outStr.append("import "+project.getBasePackage()+project.getChildPackage()+".api"+DtoType.DTO_REQUEST_QUERY_LIST.getPackagName()+"."+entityClassName+DtoType.DTO_REQUEST_QUERY_LIST.getPrex()+";\n");
                     outStr.append("import "+project.getBasePackage()+project.getChildPackage()+".api"+DtoType.DTO_REQUEST_QUERY_PAGE.getPackagName()+"."+entityClassName+DtoType.DTO_REQUEST_QUERY_PAGE.getPrex()+";\n");
+                    outStr.append("import "+project.getBasePackage()+project.getChildPackage()+BuildUtils.DAO_PACKAGE_NAME +".po."+entityClassNamePo+";\n");
                // }
                 outStr.append("import "+project.getBasePackage()+project.getChildPackage()+"."+serviceModule.getPageName()+".I"+entityClassName+ serviceModule.getSuffix() +";\n");
                 outStr.append("import cn.com.yofogo.frame.assistant.PageUtil;\n");
@@ -532,12 +566,13 @@ public class GeneratorYofoysServiceImpl implements IGenerator {
                 outStr.append("	}\n\n");
             }
             {//数据page列表页面
+
                 String pageUtil="PageUtil<"+entityClassName+DtoType.DTO_RESPONSE_PAGE.getPrex()+","+entityClassName+DtoType.DTO_REQUEST_QUERY_PAGE.getPrex()+">";
                 outStr.append("	@Override\n");
-                outStr.append("	public Feedback<"+pageUtil+"> queryPage("+pageUtil+" page){\n");//,"+entityClassName+dtoNameSuffix+" "+entityName+"
-                outStr.append("		page.setPage(true);\n");
-                outStr.append("		"+dasName+".queryPage(page,page.getConditions());\n");//,"+entityName+"
-                outStr.append("		return new Feedback<"+pageUtil+">(page);\n");//,"+entityName+"
+                outStr.append("	public Feedback<PageRespDto<"+entityClassName+DtoType.DTO_RESPONSE_PAGE.getPrex()+">> queryPage("+entityClassName+DtoType.DTO_REQUEST_QUERY_PAGE.getPrex()+" "+querHandleName+"){\n");//,"+entityClassName+dtoNameSuffix+" "+entityName+"
+                //outStr.append("		page.setPage(true);\n");
+                outStr.append("		return "+dasName+".queryPage("+querHandleName+");\n");//,"+entityName+"
+                //outStr.append("		return new Feedback<"+pageUtil+">(page);\n");//,"+entityName+"
 				/*outStr.append("	public Map<String,Object> page(@RequestBody PageUtil page,"+entityClassName+dtoNameSuffix+" "+entityName+"){\n");
 				outStr.append("		page.setPage(true);\n");
 				outStr.append("		"+servicName+".queryList(page,"+entityName+");\n");
@@ -588,15 +623,21 @@ public class GeneratorYofoysServiceImpl implements IGenerator {
                 /*****************保存数据***********************/
                 outStr.append("	@Override\n");
                 outStr.append("	public Feedback<"+entityClassNameRespDto+"> add"+entityClassName+"("+entityClassNameReqDto+" "+entityName+"){\n");
-                outStr.append("		Feedback fb = " + dasName + ".add" + entityClassName + "(" + entityName + ");\n");
-                outStr.append("		return new Feedback<"+entityClassNameRespDto+">(fb.getCode(),fb.getMessage());\n");
+                outStr.append("		"+entityClassNamePo+" "+entityName+"Po = new "+entityClassNamePo+"();\n");
+                outStr.append("		BeanUtils.copyProperties("+entityName+", "+entityName+"Po);\n");
+                outStr.append("		Feedback<"+entityClassNameRespDto+"> fb = " + dasName + ".add" + entityClassName + "(" + entityName +"Po);\n");
+                //outStr.append("		return new Feedback<"+entityClassNameRespDto+">(fb.getCode(),fb.getMessage());\n");
+                outStr.append("		return fb;\n");
 
                 outStr.append("	}\n");
                 outStr.append("\n");
                 outStr.append("	@Override\n");
                 outStr.append("	public Feedback<"+entityClassNameRespDto+"> update"+entityClassName+"("+entityClassNameReqDto+" "+entityName+"){\n");
-                outStr.append("		Feedback fb = " + dasName + ".update" + entityClassName + "(" + entityName + ");\n");
-                outStr.append("		return new Feedback<"+entityClassNameRespDto+">(fb.getCode(),fb.getMessage());\n");
+                outStr.append("		"+entityClassNamePo+" "+entityName+"Po = new "+entityClassNamePo+"();\n");
+                outStr.append("		BeanUtils.copyProperties("+entityName+", "+entityName+"Po);\n");
+                outStr.append("		Feedback<"+entityClassNameRespDto+"> fb = " + dasName + ".update" + entityClassName + "(" + entityName + "Po);\n");
+                //outStr.append("		return new Feedback<"+entityClassNameRespDto+">(fb.getCode(),fb.getMessage());\n");
+                outStr.append("		return fb;\n");
 
                 outStr.append("	}\n");
             }
@@ -695,6 +736,7 @@ public class GeneratorYofoysServiceImpl implements IGenerator {
                 //outStr.append("import javax.servlet.http.HttpServletResponse;\n");
                 outStr.append("\n");
                 //outStr.append("import org.springframework.cloud.openfeign.FeignClient;\n");
+                outStr.append("import com.yofoys.services.commons.base.PageRespDto;\n");
                 outStr.append("import io.swagger.annotations.*;\n");
                 outStr.append("import org.springframework.cloud.openfeign.FeignClient;\n");
                 outStr.append("import org.springframework.web.bind.annotation.*;\n");
@@ -737,7 +779,7 @@ public class GeneratorYofoysServiceImpl implements IGenerator {
 
 
                 outStr.append("	@ApiOperation(\"获取"+formInfo.getNames()+"列表信息\")\n");
-                outStr.append("	@GetMapping(\""+visitBasePath+"/queryList\")\n");
+                outStr.append("	@PostMapping(\""+visitBasePath+"/queryList\")\n");
                 outStr.append("	Feedback<"+listData+"> queryList(@ApiParam(value = \""+formInfo.getNames()+"查询对象\",required = true) @RequestBody "+entityClassName+DtoType.DTO_REQUEST_QUERY_LIST.getPrex()+" "+querHandleName+");\n");//,"+entityClassName+dtoNameSuffix+" "+entityName+"
 
                 impltStr.append("			@Override\n");
@@ -749,15 +791,13 @@ public class GeneratorYofoysServiceImpl implements IGenerator {
             outStr.append("\n");
             {//数据page列表
 
-                String pageUtil="PageUtil<"+entityClassName+DtoType.DTO_RESPONSE_PAGE.getPrex()+","+entityClassName+DtoType.DTO_REQUEST_QUERY_PAGE.getPrex()+">";
-
-
+                String querHandleName=entityName+DtoType.DTO_REQUEST_QUERY.getPrex();
                 outStr.append("	@ApiOperation(\"获取"+formInfo.getNames()+"分页列表信息。\")\n");
                 outStr.append("	@PostMapping(\""+visitBasePath+"/queryPage\")\n");
-                outStr.append("	Feedback<"+pageUtil+"> queryPage(@ApiParam(value = \""+formInfo.getNames()+"分页查询对象\",required = true) @RequestBody "+pageUtil+" page);\n");//,"+entityClassName+dtoNameSuffix+" "+entityName+"
+                outStr.append("	Feedback<PageRespDto<"+entityClassName+DtoType.DTO_RESPONSE_PAGE.getPrex()+">> queryPage(@ApiParam(value = \""+formInfo.getNames()+"分页查询对象\",required = true) @RequestBody "+entityClassName+DtoType.DTO_REQUEST_QUERY_PAGE.getPrex()+" "+querHandleName+");\n");//,"+entityClassName+dtoNameSuffix+" "+entityName+"
 
                 impltStr.append("			@Override\n");
-                impltStr.append("			public Feedback<"+pageUtil+"> queryPage("+pageUtil+" page){\n");//,"+entityClassName+dtoNameSuffix+" "+entityName+"
+                impltStr.append("			public Feedback<PageRespDto<"+entityClassName+DtoType.DTO_RESPONSE_PAGE.getPrex()+">> queryPage("+entityClassName+DtoType.DTO_REQUEST_QUERY_PAGE.getPrex()+" "+querHandleName+"){\n");//,"+entityClassName+dtoNameSuffix+" "+entityName+"
                 impltStr.append("				return new Feedback(10500,\""+formInfo.getNames()+"分页服务异常\");\n");
                 impltStr.append("			}\n\n");
             }
@@ -836,7 +876,7 @@ public class GeneratorYofoysServiceImpl implements IGenerator {
                 outStr.append("package "+project.getBasePackage()+packageName+";\n\n");
                 //outStr.append("import javax.servlet.http.HttpServletResponse;\n");
                 outStr.append("\n");
-                //outStr.append("import org.springframework.cloud.openfeign.FeignClient;\n");
+                outStr.append("import com.yofoys.services.commons.base.PageRespDto;\n");
                 outStr.append("import io.swagger.annotations.*;\n");
                 outStr.append("import org.springframework.beans.factory.annotation.Autowired;\n");
                 outStr.append("import org.springframework.web.bind.annotation.*;\n");
@@ -873,7 +913,7 @@ public class GeneratorYofoysServiceImpl implements IGenerator {
 
 
                 outStr.append("	@ApiOperation(\"获取"+formInfo.getNames()+"列表信息\")\n");
-                outStr.append("	@GetMapping(\"/queryList\")\n");
+                outStr.append("	@PostMapping(\"/queryList\")\n");
                 outStr.append("	public Feedback<"+listData+"> queryList(@ApiParam(value = \""+formInfo.getNames()+"查询对象\",required = true) @RequestBody "+entityClassName+DtoType.DTO_REQUEST_QUERY_LIST.getPrex()+" "+entityName+DtoType.DTO_REQUEST_QUERY.getPrex()+"){\n");//,"+entityClassName+dtoNameSuffix+" "+entityName+"
                 outStr.append("		return "+interfaceName+".queryList("+entityName+DtoType.DTO_REQUEST_QUERY.getPrex()+");\n");
                 outStr.append("	}\n\n");
@@ -881,14 +921,11 @@ public class GeneratorYofoysServiceImpl implements IGenerator {
             outStr.append("\n");
             outStr.append("\n");
             {//数据page列表
-
-                String pageUtil="PageUtil<"+entityClassName+DtoType.DTO_RESPONSE_PAGE.getPrex()+","+entityClassName+DtoType.DTO_REQUEST_QUERY_PAGE.getPrex()+">";
-
-
+                String querHandleName=entityName+DtoType.DTO_REQUEST_QUERY.getPrex();
                 outStr.append("	@ApiOperation(\"获取"+formInfo.getNames()+"列表信息。分页\")\n");
                 outStr.append("	@PostMapping(\"/queryPage\")\n");
-                outStr.append("	public Feedback<"+pageUtil+"> queryPage(@ApiParam(value = \""+formInfo.getNames()+"分页查询对象\",required = true) @RequestBody "+pageUtil+" page){\n");//,"+entityClassName+dtoNameSuffix+" "+entityName+"
-                outStr.append("		return "+interfaceName+".queryPage(page);\n");
+                outStr.append("	public Feedback<PageRespDto<"+entityClassName+DtoType.DTO_RESPONSE_PAGE.getPrex()+">> queryPage(@ApiParam(value = \""+formInfo.getNames()+"分页查询对象\",required = true) @RequestBody "+entityClassName+DtoType.DTO_REQUEST_QUERY_PAGE.getPrex()+" "+querHandleName+"){\n");//,"+entityClassName+dtoNameSuffix+" "+entityName+"
+                outStr.append("		return "+interfaceName+".queryPage("+querHandleName+");\n");
                 outStr.append("	}\n\n");
             }
             outStr.append("\n");

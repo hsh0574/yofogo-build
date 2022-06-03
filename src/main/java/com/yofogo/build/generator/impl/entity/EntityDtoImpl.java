@@ -154,98 +154,108 @@ public class EntityDtoImpl implements IEntityDto {
         }
         return false;
     }
-    private void _buildEntityDto(ProInfo project,FormInfo formInfo,String className,DtoType dtoType) throws IOException{
+    private void _buildEntityDto(ProInfo project,FormInfo formInfo,String className,DtoType dtoType) throws IOException {
 
-        String extendsStr = IS_NEW_MODULE?" extends BaseQueryDto":"";
+        String extendsStr = IS_NEW_MODULE ? " extends BaseQueryDto" : "";
 
-        StringBuilder outStr=new StringBuilder();
-        outStr.append("package "+project.getBasePackage()+project.getChildPackage()+".api"+dtoType.getPackagName()+";\n");
+        StringBuilder outStr = new StringBuilder();
+        outStr.append("package " + project.getBasePackage() + project.getChildPackage() + ".api" + dtoType.getPackagName() + ";\n");
         outStr.append("\n");
         outStr.append("import cn.com.yofogo.tools.util.DateTimeUtil;\n");
         //outStr.append("import com.yzzou.commons.utils.ReqeustQueryDto;\n");
         outStr.append("import org.springframework.format.annotation.DateTimeFormat;\n");
         //outStr.append("import "+project.getBasePackage()+project.getChildPackage()+".entity.vo."+className+"Vo;\n");
         //if(isLombok) outStr.append("import lombok.experimental.Accessors;");
-        outStr.append("import io.swagger.annotations.ApiModelProperty;");
-        String extendClass="";
-        if(dtoType.name().startsWith(DtoType.DTO_REQUEST_QUERY.name())){
-            extendClass = IS_NEW_MODULE?" extends BaseQueryDto":"";
+        outStr.append("import io.swagger.annotations.ApiModelProperty;\n");
+        String extendClass = "";
+        if (DtoType.DTO_REQUEST_QUERY_PAGE == dtoType) {
+            extendClass = IS_NEW_MODULE ? " extends PageQueryDto" : "";
+            outStr.append("import com.yofoys.services.commons.base.PageQueryDto;");
+        } else if (dtoType.name().startsWith(DtoType.DTO_REQUEST_QUERY.name())) {
+            extendClass = IS_NEW_MODULE ? " extends BaseQueryDto" : "";
             outStr.append("import com.yofoys.services.commons.base.BaseQueryDto;");
-        } else if(DtoType.DTO_REQUEST==dtoType) {
-            extendClass = IS_NEW_MODULE?" extends BaseReqDto":"";
+        } else if (DtoType.DTO_REQUEST == dtoType) {
+            extendClass = IS_NEW_MODULE ? " extends BaseReqDto" : "";
             outStr.append("import com.yofoys.services.commons.base.BaseReqDto;");
         }
-        //else if(DtoType.DTO_RESPONSE==dtoTypeName) extendClass = IS_NEW_MODULE?" extends BaseQueryDto":"";
-        outStr.append("\n");
-        outStr.append("/**\n * "+formInfo.getNames()+dtoType.getPrex()+"实体类\n * @author zhengzhou.yang\n * "+DateTimeUtil.getCurrentDatetime("yyyy-MM-dd")+"\n */\n");
-        outStr.append("public class "+className+dtoType.getPrex()+extendClass+"  implements java.io.Serializable{\n");
-        outStr.append("	private static final long serialVersionUID = "+new Random().nextLong()+"L;\n");
-        outStr.append("\n");
-        outStr.append("\n");
-        StringBuilder methods=new StringBuilder();
-
-
-
-        FormFieldType fieldFType=null;
-        String fieldName,typeName,annotation;
-        for(FormElementField field : formInfo.getEleFields()){
-            annotation="";
-            if(field.getFefid()==null){
-                //if(field.getFdfMust()==1) annotation+=",notNull=true";
-                fieldName=BuildUtils.buildTuoFengName(field.getDataTag(),false);
-                try {
-                    fieldFType=DBFieldType.valueOf(field.getDbType().toUpperCase()).toEleFieldType();
-                } catch (Exception e) {
-                    System.out.println(field.getDbType());
-                }
-            }else {
-                //if(field.getFdfMust()==1) annotation+=",notNull=true";
-                fieldName=BuildUtils.buildTuoFengName(field.getTag(),false);
-                fieldFType=FormFieldType.valueOf(field.getTypes());
-            }
-            if(COMMON_FIELDS.contains(fieldName)){
-                if(dtoType.name().indexOf("RESPONSE")<0 || !"createTime".equals(fieldName)){
-                    continue;
-                }
-            }
-            annotation+=("".equals(annotation)?"":"\n")+"@ApiModelProperty(name = \""+fieldName+"\",value = \""+field.getNames()+"\")";
-
-            typeName=BuildUtils.buildFieldTypeName(DBFieldType.valueOf(field.getDbType()));
-
-            buildEnityField(outStr,methods,annotation,fieldName,fieldFType,typeName,field.getNames(),null,0);
-            SelectItems selectItem=field.getSelectItem();
-            if(selectItem!=null && selectItem.getType()==2) buildEnityField(outStr,methods,null,fieldName+"ToOfItemName",fieldFType,"String",field.getNames(),null,0);
-
-            outStr.append("\n");
+        if (dtoType.getExtendsDto() != null) {
+            extendClass = " extends " + className + dtoType.getExtendsDto().getPrex();
         }
 
-			/*if(DTO_REQUEST_QUERY.equals(dtoTypeName)){
-				for(FormElementField field : formInfo.getEleFields()){
-					String fieldName,typeName;
-					FormFieldType fieldFType=null;
-					if(field.getFefid()==null){
-						fieldName=BuildUtils.buildTuoFengName(field.getDataTag(),false);
-						try {
-							fieldFType=DBFieldType.valueOf(field.getDbType().toUpperCase()).toEleFieldType();
-						} catch (Exception e) {
-							System.out.println(field.getDbType());
-						}
-					}else {
-						fieldName=BuildUtils.buildTuoFengName(field.getTag(),false);
-						fieldFType=FormFieldType.valueOf(field.getTypes());
-					}
-					typeName=BuildUtils.buildFieldTypeName(DBFieldType.valueOf(field.getDbType()));
-
-					buildEnityField(outStr,methods,"",fieldName,fieldFType,typeName,field.getNames(),null,0);
-					outStr.append("\n");
-				}
-			} else buildEnityField(outStr,methods,"",className+"Vo",null,className+"Vo",formInfo.getNames(),null,0);
-
-			*/
+        //else if(DtoType.DTO_RESPONSE==dtoTypeName) extendClass = IS_NEW_MODULE?" extends BaseQueryDto":"";
+        outStr.append("\n");
+        outStr.append("\n");
+        outStr.append("/**\n * " + formInfo.getNames() + dtoType.getPrex() + "实体类\n * @author zhengzhou.yang\n * " + DateTimeUtil.getCurrentDatetime("yyyy-MM-dd") + "\n */\n");
+        outStr.append("public class " + className + dtoType.getPrex() + extendClass)
+                .append("  implements java.io.Serializable{\n");
+        outStr.append("	private static final long serialVersionUID = " + new Random().nextLong() + "L;\n");
+        outStr.append("\n");
+        outStr.append("\n");
+        if (dtoType.getExtendsDto() == null) {
+            StringBuilder methods = new StringBuilder();
 
 
+            FormFieldType fieldFType = null;
+            String fieldName, typeName, annotation;
+            for (FormElementField field : formInfo.getEleFields()) {
+                annotation = "";
+                if (field.getFefid() == null) {
+                    //if(field.getFdfMust()==1) annotation+=",notNull=true";
+                    fieldName = BuildUtils.buildTuoFengName(field.getDataTag(), false);
+                    try {
+                        fieldFType = DBFieldType.valueOf(field.getDbType().toUpperCase()).toEleFieldType();
+                    } catch (Exception e) {
+                        System.out.println(field.getDbType());
+                    }
+                } else {
+                    //if(field.getFdfMust()==1) annotation+=",notNull=true";
+                    fieldName = BuildUtils.buildTuoFengName(field.getTag(), false);
+                    fieldFType = FormFieldType.valueOf(field.getTypes());
+                }
+                if (COMMON_FIELDS.contains(fieldName)) {
+                    if (dtoType.name().indexOf("RESPONSE") < 0 || !"createTime".equals(fieldName)) {
+                        continue;
+                    }
+                }
+                annotation += ("".equals(annotation) ? "" : "\n") + "@ApiModelProperty(name = \"" + fieldName + "\",value = \"" + field.getNames() + "\")";
 
-        outStr.append(methods.toString());
+                typeName = BuildUtils.buildFieldTypeName(DBFieldType.valueOf(field.getDbType()));
+
+                buildEnityField(outStr, methods, annotation, fieldName, fieldFType, typeName, field.getNames(), null, 0);
+                SelectItems selectItem = field.getSelectItem();
+                if (selectItem != null && selectItem.getType() == 2)
+                    buildEnityField(outStr, methods, null, fieldName + "ToOfItemName", fieldFType, "String", field.getNames(), null, 0);
+
+                outStr.append("\n");
+            }
+
+                /*if(DTO_REQUEST_QUERY.equals(dtoTypeName)){
+                    for(FormElementField field : formInfo.getEleFields()){
+                        String fieldName,typeName;
+                        FormFieldType fieldFType=null;
+                        if(field.getFefid()==null){
+                            fieldName=BuildUtils.buildTuoFengName(field.getDataTag(),false);
+                            try {
+                                fieldFType=DBFieldType.valueOf(field.getDbType().toUpperCase()).toEleFieldType();
+                            } catch (Exception e) {
+                                System.out.println(field.getDbType());
+                            }
+                        }else {
+                            fieldName=BuildUtils.buildTuoFengName(field.getTag(),false);
+                            fieldFType=FormFieldType.valueOf(field.getTypes());
+                        }
+                        typeName=BuildUtils.buildFieldTypeName(DBFieldType.valueOf(field.getDbType()));
+
+                        buildEnityField(outStr,methods,"",fieldName,fieldFType,typeName,field.getNames(),null,0);
+                        outStr.append("\n");
+                    }
+                } else buildEnityField(outStr,methods,"",className+"Vo",null,className+"Vo",formInfo.getNames(),null,0);
+
+                */
+
+
+            outStr.append(methods.toString());
+        }
         outStr.append("\n");
         outStr.append("}");
         File file=new File(project.getJavaBasePath()+project.getChildPackage().replace(".", "/")+"/api/"+dtoType.getPackagName().replace(".","/"));
